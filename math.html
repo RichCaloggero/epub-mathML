@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EPUB.js Math Test</title>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/mml-chtml.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+<script src="epub.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="examples.css">
+
+</head>
+<body>
+  <div id="message" aria-live="polite"></div>
+<a id="prev" href="#prev" class="navlink" accesskey="p">Previous</a>
+  <div id="viewer" class="scrolled"></div>
+  <a id="next" href="#next" class="navlink" accesskey="n">Next</a>
+
+  <script>
+    var message = document.querySelector("#message");
+// Load the opf
+    
+     var book = ePub("/linear-algebra.epub");
+    var rendition = book.renderTo("viewer", {
+method: "default",
+      flow: "scrolled-doc",
+      width: "100%", height: "100%",
+    });
+
+rendition.hooks.content.register(function(contents) {
+return contents.addScript("https://cdn.jsdelivr.net/npm/mathjax@3/es5/mml-chtml.js")
+.then(() => {
+message.textContent = "mathjax loaded";
+});
+}); // hook
+
+
+    rendition.display(15);
+
+
+    var next = document.getElementById("next");
+    next.addEventListener("click", function(e){
+      rendition.next();
+      e.preventDefault();
+    }, false);
+
+    var prev = document.getElementById("prev");
+    prev.addEventListener("click", function(e){
+      rendition.prev();
+      e.preventDefault();
+    }, false);
+
+    rendition.on("relocated", function(location){
+      console.log(location);
+    });
+
+    rendition.on("rendered", function(section){
+      var nextSection = section.next();
+      var prevSection = section.prev();
+
+      if(nextSection) {
+        nextNav = book.navigation.get(nextSection.href);
+
+        if(nextNav) {
+          nextLabel = nextNav.label;
+        } else {
+          nextLabel = "next";
+        }
+
+        next.textContent = nextLabel;
+      next.setAttribute("accesskey", "n");
+} else {
+        next.textContent = "";
+      }
+
+      if(prevSection) {
+        prevNav = book.navigation.get(prevSection.href);
+
+        if(prevNav) {
+          prevLabel = prevNav.label;
+        } else {
+          prevLabel = "previous";
+        }
+
+        prev.setAttribute("accesskey", "p");
+prev.textContent = prevLabel;
+      } else {
+        prev.textContent = "";
+      }
+
+    });
+
+  </script>
+
+</body>
+</html>
